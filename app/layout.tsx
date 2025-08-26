@@ -1,33 +1,33 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { AuthProvider } from "@/hooks/use-supabase-auth"
-import { NotificationProvider } from "@/app/components/notifications/notification-provider"
-import { Toaster } from "@/components/ui/sonner"
+// file: app/layout.tsx
 
-const inter = Inter({ subsets: ["latin"] })
+import type React from 'react';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/hooks/use-supabase-auth'; // Pastikan path ini benar
+import { Toaster } from '@/components/ui/sonner';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "PT. Merpati Wahana Raya - Admin Dashboard",
-  description: "Employee management system for PT. Merpati Wahana Raya",
-}
+  title: 'PT. Merpati Wahana Raya',
+  description: 'Employee management system',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang='en'>
       <body className={inter.className}>
+        {/* AuthProvider HARUS membungkus semua children di sini */}
         <AuthProvider>
-          <NotificationProvider>
-            {children}
-            <Toaster position="top-right" richColors closeButton />
-          </NotificationProvider>
+          {children}
+          <Toaster position='top-right' richColors closeButton />
         </AuthProvider>
       </body>
     </html>
-  )
+  );
 }

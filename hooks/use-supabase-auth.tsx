@@ -1,3 +1,5 @@
+// file: hooks/use-supabase-auth.tsx
+
 'use client';
 
 import {
@@ -10,11 +12,13 @@ import {
 import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
+// Definisikan tipe untuk metadata pengguna
 interface UserMetadata {
   user_role: 'admin' | 'employee';
   full_name: string;
 }
 
+// Gabungkan tipe SupabaseUser dengan metadata kustom
 export interface CustomUser extends SupabaseUser {
   user_metadata: UserMetadata;
 }
@@ -33,26 +37,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser((session?.user as CustomUser) ?? null);
-      setLoading(false);
+    // Listener ini akan berjalan saat komponen pertama kali dimuat
+    // dan setiap kali status otentikasi berubah (login/logout).
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        // Ambil data pengguna terbaru dari server.
+        // Ini adalah cara paling andal untuk mendapatkan metadata.
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
 
-      const { data: authListener } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          setUser((session?.user as CustomUser) ?? null);
-          setLoading(false);
-        }
-      );
+        setUser((currentUser as CustomUser) ?? null);
+        setLoading(false);
+      }
+    );
 
-      return () => {
-        authListener.subscription.unsubscribe();
-      };
+    // Hentikan listener saat komponen tidak lagi digunakan
+    return () => {
+      authListener.subscription.unsubscribe();
     };
-
-    getSession();
   }, []);
 
   const logout = async (): Promise<void> => {

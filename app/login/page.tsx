@@ -1,3 +1,5 @@
+// file: app/login/page.tsx
+
 'use client';
 
 import type React from 'react';
@@ -15,10 +17,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { signInWithNik } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 export default function LoginPage() {
-  const [nik, setNik] = useState('');
+  const [nikOrEmail, setNikOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,19 +34,21 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Panggil fungsi login
-      const { error: signInError } = await signInWithNik(nik, password);
+      const isEmail = nikOrEmail.includes('@');
+      const email = isEmail ? nikOrEmail : `${nikOrEmail}@company.com`;
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
 
       if (signInError) {
-        // Jika ada error dari Supabase, tampilkan pesannya
-        setError(signInError.message || 'Invalid NIK or password');
+        setError(signInError.message || 'Invalid NIK/email or password');
       } else {
-        // **PERBAIKAN PENTING:**
-        // Jangan langsung redirect di sini. Biarkan AuthProvider dan
-        // halaman utama (page.tsx) yang menangani redirect setelah
-        // sesi pengguna terdeteksi. Cukup refresh halaman.
-        router.push('/'); // Arahkan ke root
-        router.refresh(); // Paksa Next.js untuk memuat ulang state dari server
+        // --- PERUBAHAN PENTING ---
+        // Arahkan ke halaman utama setelah login berhasil.
+        // Halaman utama akan menangani pengalihan ke dasbor yang benar.
+        router.push('/');
       }
     } catch (err) {
       setError('An unknown error occurred during login.');
@@ -57,20 +61,23 @@ export default function LoginPage() {
     <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4'>
       <Card className='w-full max-w-md'>
         <CardHeader className='text-center'>
-          {/* ... (Icon dan Judul tetap sama) ... */}
+          <CardTitle>Sign In</CardTitle>
+          <CardDescription>
+            Enter your NIK or Admin Email to access your dashboard.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className='space-y-4'>
             <div className='space-y-2'>
-              <Label htmlFor='nik'>NIK (Nomor Induk Karyawan)</Label>
+              <Label htmlFor='nik'>NIK atau Email Admin</Label>
               <div className='relative'>
                 <User className='absolute left-3 top-3 h-4 w-4 text-gray-400' />
                 <Input
                   id='nik'
                   type='text'
-                  placeholder='Enter your NIK'
-                  value={nik}
-                  onChange={(e) => setNik(e.target.value)}
+                  placeholder='Enter your NIK or email'
+                  value={nikOrEmail}
+                  onChange={(e) => setNikOrEmail(e.target.value)}
                   className='pl-10'
                   required
                 />

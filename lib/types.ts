@@ -1,34 +1,63 @@
-// File: lib/types.ts
+// lib/types.ts
 
-import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-// Definisikan properti custom yang ada di user_metadata kamu
-interface UserMetadata {
-  name: string;
-  avatar_url: string; // Di Supabase biasanya namanya avatar_url
-  position?: string;
-  department?: string;
+// Tipe untuk data yang ada di tabel 'profiles'
+export interface Profile {
+  id: string; // UUID from auth.users
+  employee_id: string; // NIK
+  full_name: string;
+  position: string;
+  department: string;
+  user_role: 'admin' | 'employee';
+  avatar_url?: string;
 }
 
-// Gabungkan tipe SupabaseUser dengan metadata kita
+// Gabungkan tipe SupabaseUser dengan Profile kita
 export interface CustomUser extends SupabaseUser {
-  user_metadata: UserMetadata;
+  profile: Profile;
 }
 
-// Di dalam file lib/supabase.ts atau lib/types.ts
+// Definisikan juga tipe data untuk tabel lain
+export interface AttendanceRecord {
+  id: number;
+  user_id: string;
+  check_in: string | null;
+  check_out: string | null;
+  date: string;
+  status: 'on_time' | 'late' | 'absent';
+  hours_worked?: number;
+}
+
+export interface LeaveRequest {
+  id: number;
+  user_id: string;
+  leave_type: string;
+  start_date: string;
+  end_date: string;
+  reason?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  document_url?: string;
+}
+
+export interface Document {
+  id: number;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  file_size: number;
+  uploaded_by: string;
+  created_at: string;
+  url?: string; // URL publik dari Supabase Storage
+}
 
 export interface Notification {
-  id: string;
+  id: number; // ID adalah number (BIGINT)
   user_id: string;
   title: string;
   message: string;
-  // SEBELUMNYA:
-  // type: "info" | "success" | "warning" | "error";
-
-  // SESUDAH (tambahkan tipe baru yang kamu butuhkan):
-  type: "info" | "success" | "warning" | "error" | "attendance_request" | "leave_request" | "document_upload";
-
-  read: boolean;
-  action_url?: string;
+  type: string;
+  read: boolean; // Gunakan 'read' secara konsisten
   created_at: string;
+  action_url?: string;
 }

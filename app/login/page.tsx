@@ -37,18 +37,25 @@ export default function LoginPage() {
       const isEmail = nikOrEmail.includes('@');
       const email = isEmail ? nikOrEmail : `${nikOrEmail}@company.com`;
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
+        });
 
       if (signInError) {
         setError(signInError.message || 'Invalid NIK/email or password');
-      } else {
-        // --- PERUBAHAN PENTING ---
-        // Arahkan ke halaman utama setelah login berhasil.
-        // Halaman utama akan menangani pengalihan ke dasbor yang benar.
+      } else if (data.session) {
+        // --- PERBAIKAN PENTING DI SINI ---
+        // 1. Beri tahu Next.js untuk me-refresh state di server & client
+        router.refresh();
+
+        // 2. Arahkan ke halaman utama. Halaman utama akan menangani
+        //    pengalihan ke dasbor yang benar (admin/employee).
         router.push('/');
+      } else {
+        // Kasus aneh jika tidak ada error tapi sesi juga tidak ada
+        setError('Login failed without a specific error. Please try again.');
       }
     } catch (err) {
       setError('An unknown error occurred during login.');

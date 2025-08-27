@@ -3,15 +3,13 @@
 'use client';
 
 import { AdminDashboard } from '../components/admin-dashboard';
-import { CreateEmployeeForm } from './components/CreateEmployeeForm'; // Impor komponen baru
+import { Sidebar } from '../components/layout/sidebar'; // Impor sidebar yang benar
 
 export default function AdminPage() {
   return (
-    <div>
+    <div className='flex min-h-screen bg-gray-50'>
+      <Sidebar />
       <AdminDashboard />
-      <div className='p-6'>
-        <CreateEmployeeForm />
-      </div>
     </div>
   );
 }

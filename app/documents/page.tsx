@@ -2,16 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  Search,
-  Upload,
-  Download,
-  Eye,
-  Trash2,
-  Filter,
-  Plus,
-  FileText,
-} from 'lucide-react';
+import { Plus, Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -21,7 +12,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -39,16 +29,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Sidebar } from '../components/layout/sidebar';
 import { Header } from '../components/layout/header';
-import { useToast } from '@/app/components/ui/use-toast';
+// --- PERBAIKAN DI SINI ---
+import { toast } from 'sonner'; // Langsung gunakan dari sonner agar lebih sederhana
 import {
   getDocuments,
   uploadDocument,
@@ -61,7 +45,6 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [newDocumentFile, setNewDocumentFile] = useState<File | null>(null);
-  const { toast } = useToast();
 
   const fetchDocuments = async () => {
     setLoading(true);
@@ -69,11 +52,7 @@ export default function DocumentsPage() {
       const data = await getDocuments();
       setDocuments(data);
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch documents.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to fetch documents.');
     } finally {
       setLoading(false);
     }
@@ -85,28 +64,21 @@ export default function DocumentsPage() {
 
   const handleUpload = async () => {
     if (!newDocumentFile) {
-      toast({
-        title: 'Error',
-        description: 'Please select a file to upload.',
-        variant: 'destructive',
-      });
+      // Sekarang pesan error ini akan muncul
+      toast.error('Please select a file to upload.');
       return;
     }
 
     try {
+      toast.loading('Uploading document...');
       await uploadDocument(newDocumentFile);
       setUploadDialogOpen(false);
       setNewDocumentFile(null);
-      toast({
-        title: 'Success',
-        description: 'Document uploaded successfully!',
-      });
+      toast.success('Document uploaded successfully!');
       await fetchDocuments();
     } catch (error: any) {
-      toast({
-        title: 'Upload Failed',
+      toast.error('Upload Failed', {
         description: error.message,
-        variant: 'destructive',
       });
     }
   };
@@ -118,17 +90,13 @@ export default function DocumentsPage() {
       )
     ) {
       try {
+        toast.loading('Deleting document...');
         await deleteDocument(id);
-        toast({
-          title: 'Success',
-          description: 'Document deleted successfully.',
-        });
+        toast.success('Document deleted successfully.');
         await fetchDocuments();
       } catch (error: any) {
-        toast({
-          title: 'Error',
+        toast.error('Error deleting document', {
           description: error.message,
-          variant: 'destructive',
         });
       }
     }

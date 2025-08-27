@@ -14,7 +14,8 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { adminCreateUser } from '../../../lib/supabase';
-import { useToast } from '@/app/components/ui/use-toast';
+// --- PERBAIKAN DI SINI ---
+import { toast } from 'sonner';
 
 export function CreateEmployeeForm() {
   const [nik, setNik] = useState('');
@@ -23,24 +24,16 @@ export function CreateEmployeeForm() {
   const [position, setPosition] = useState('');
   const [department, setDepartment] = useState('');
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleCreateUser = async () => {
     if (!nik || !password || !fullName || !position || !department) {
-      toast({
-        title: 'Error',
-        description: 'Please fill all fields.',
-        variant: 'destructive',
-      });
+      toast.error('Please fill all fields.');
       return;
     }
     setLoading(true);
     try {
       await adminCreateUser(nik, password, { fullName, position, department });
-      toast({
-        title: 'Success',
-        description: `Employee ${fullName} created successfully.`,
-      });
+      toast.success(`Employee ${fullName} created successfully.`);
       // Reset form
       setNik('');
       setPassword('');
@@ -48,10 +41,8 @@ export function CreateEmployeeForm() {
       setPosition('');
       setDepartment('');
     } catch (error: any) {
-      toast({
-        title: 'Error creating user',
+      toast.error('Error creating user', {
         description: error.message,
-        variant: 'destructive',
       });
     } finally {
       setLoading(false);

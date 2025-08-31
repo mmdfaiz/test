@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation'; // <-- Impor useRouter
 
 // Definisikan tipe untuk metadata pengguna
 interface UserMetadata {
@@ -26,7 +27,7 @@ export interface CustomUser extends SupabaseUser {
 interface AuthContextType {
   user: CustomUser | null;
   loading: boolean;
-  logout: () => Promise<void>;
+  logout: (redirectPath?: string) => Promise<void>; // <-- Perbarui tipe fungsi logout
   isAuthenticated: boolean;
 }
 
@@ -35,39 +36,49 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CustomUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter(); // <-- Gunakan router di dalam provider
 
   useEffect(() => {
-    // Listener ini akan berjalan saat komponen pertama kali dimuat
-    // dan setiap kali status otentikasi berubah (login/logout).
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // Ambil data pengguna terbaru dari server.
-        // Ini adalah cara paling andal untuk mendapatkan metadata.
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
+    const checkActiveSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-        setUser((currentUser as CustomUser) ?? null);
+      const loggedInUser = (session?.user as CustomUser) ?? null;
+      setUser(loggedInUser);
+      setIsAuthenticated(!!loggedInUser);
+      setLoading(false);
+    };
+
+    checkActiveSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        const loggedInUser = (session?.user as CustomUser) ?? null;
+        setUser(loggedInUser);
+        setIsAuthenticated(!!loggedInUser);
         setLoading(false);
       }
     );
 
-    // Hentikan listener saat komponen tidak lagi digunakan
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
 
-  const logout = async (): Promise<void> => {
+  // Fungsi logout sekarang menangani redirect
+  const logout = async (redirectPath: string = '/'): Promise<void> => {
     await supabase.auth.signOut();
-    setUser(null);
+    // State akan diupdate oleh listener, kita hanya perlu redirect
+    router.push(redirectPath);
   };
 
   const value = {
     user,
     loading,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

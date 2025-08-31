@@ -1,3 +1,5 @@
+// app/components/employee/employee-sidebar.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -120,21 +122,10 @@ export function EmployeeSidebar() {
         {!isCollapsed ? (
           <div className='space-y-3'>
             <div className='flex items-center space-x-3'>
-              {/* <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.user_metadata?.avatar_url || " "} />
-                <AvatarFallback>
-                  {user?.user_metadata?.name
-                    ?.split(" ")
-                    .map((n:any) => n[0])
-                    .join("")
-                    .toUpperCase()}
-                </AvatarFallback>
-              </Avatar> */}
               <div className='flex-1 min-w-0'>
                 <p className='text-sm font-medium text-gray-900 truncate'>
                   {user?.user_metadata?.full_name}
                 </p>
-                {/* <p className="text-xs text-gray-500 truncate">{user?.user_metadata?.position}</p> */}
               </div>
             </div>
             <Button
@@ -149,18 +140,7 @@ export function EmployeeSidebar() {
           </div>
         ) : (
           <div className='space-y-2'>
-            <div className='flex justify-center'>
-              {/* <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg"} />
-                <AvatarFallback className="text-xs">
-                  {user?.user_metadata?.name
-                    ?.split(" ")
-                    .map((n:any) => n[0])
-                    .join("")
-                    .toUpperCase()}
-                </AvatarFallback>
-              </Avatar> */}
-            </div>
+            <div className='flex justify-center'></div>
             <Button
               variant='outline'
               size='sm'

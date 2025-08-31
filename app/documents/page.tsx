@@ -31,8 +31,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Sidebar } from '../components/layout/sidebar';
 import { Header } from '../components/layout/header';
-// --- PERBAIKAN DI SINI ---
-import { toast } from 'sonner'; // Langsung gunakan dari sonner agar lebih sederhana
+import { toast } from 'sonner';
 import {
   getDocuments,
   uploadDocument,
@@ -64,20 +63,21 @@ export default function DocumentsPage() {
 
   const handleUpload = async () => {
     if (!newDocumentFile) {
-      // Sekarang pesan error ini akan muncul
       toast.error('Please select a file to upload.');
       return;
     }
 
+    const toastId = toast.loading('Uploading document...'); // <-- Beri ID pada toast loading
+
     try {
-      toast.loading('Uploading document...');
       await uploadDocument(newDocumentFile);
       setUploadDialogOpen(false);
       setNewDocumentFile(null);
-      toast.success('Document uploaded successfully!');
+      toast.success('Document uploaded successfully!', { id: toastId }); // <-- Gunakan ID untuk update
       await fetchDocuments();
     } catch (error: any) {
       toast.error('Upload Failed', {
+        id: toastId, // <-- Gunakan ID untuk update
         description: error.message,
       });
     }
@@ -89,13 +89,15 @@ export default function DocumentsPage() {
         'Are you sure you want to delete this document? This action cannot be undone.'
       )
     ) {
+      const toastId = toast.loading('Deleting document...'); // <-- Beri ID pada toast loading
+
       try {
-        toast.loading('Deleting document...');
         await deleteDocument(id);
-        toast.success('Document deleted successfully.');
+        toast.success('Document deleted successfully.', { id: toastId }); // <-- Gunakan ID untuk update
         await fetchDocuments();
       } catch (error: any) {
         toast.error('Error deleting document', {
+          id: toastId, // <-- Gunakan ID untuk update
           description: error.message,
         });
       }

@@ -1,5 +1,4 @@
 // app/admin/components/CreateEmployeeForm.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -13,40 +12,29 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { adminCreateUser } from '../../../lib/supabase';
-// --- PERBAIKAN DI SINI ---
 import { toast } from 'sonner';
+import { createEmployeeAction } from '../actions'; // <-- Pastikan path ini benar
 
 export function CreateEmployeeForm() {
-  const [nik, setNik] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [position, setPosition] = useState('');
-  const [department, setDepartment] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleCreateUser = async () => {
-    if (!nik || !password || !fullName || !position || !department) {
-      toast.error('Please fill all fields.');
-      return;
-    }
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setLoading(true);
-    try {
-      await adminCreateUser(nik, password, { fullName, position, department });
-      toast.success(`Employee ${fullName} created successfully.`);
-      // Reset form
-      setNik('');
-      setPassword('');
-      setFullName('');
-      setPosition('');
-      setDepartment('');
-    } catch (error: any) {
+
+    const formData = new FormData(event.currentTarget);
+    const result = await createEmployeeAction(formData);
+
+    if (result.error) {
       toast.error('Error creating user', {
-        description: error.message,
+        description: result.error,
       });
-    } finally {
-      setLoading(false);
+    } else if (result.success) {
+      toast.success(result.success);
+      (event.target as HTMLFormElement).reset(); // Reset form setelah berhasil
     }
+
+    setLoading(false);
   };
 
   return (
@@ -58,60 +46,63 @@ export function CreateEmployeeForm() {
           NIK.
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          <div>
-            <Label htmlFor='nik'>NIK (Nomor Induk Karyawan)</Label>
-            <Input
-              id='nik'
-              value={nik}
-              onChange={(e) => setNik(e.target.value)}
-              placeholder='e.g., 2024001'
-            />
+      <CardContent>
+        {/* Mengubah menjadi form dengan name attribute */}
+        <form onSubmit={handleSubmit} className='space-y-4'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div>
+              <Label htmlFor='nik'>NIK (Nomor Induk Karyawan)</Label>
+              <Input
+                id='nik'
+                name='nik' // <-- Tambahkan name
+                placeholder='e.g., 2024001'
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor='password'>Initial Password</Label>
+              <Input
+                id='password'
+                name='password' // <-- Tambahkan name
+                type='password'
+                placeholder='Set a temporary password'
+                required
+              />
+            </div>
           </div>
           <div>
-            <Label htmlFor='password'>Initial Password</Label>
+            <Label htmlFor='fullName'>Full Name</Label>
             <Input
-              id='password'
-              type='password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder='Set a temporary password'
+              id='fullName'
+              name='fullName' // <-- Tambahkan name
+              placeholder='e.g., Jane Doe'
+              required
             />
           </div>
-        </div>
-        <div>
-          <Label htmlFor='fullName'>Full Name</Label>
-          <Input
-            id='fullName'
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder='e.g., Jane Doe'
-          />
-        </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          <div>
-            <Label htmlFor='position'>Position</Label>
-            <Input
-              id='position'
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              placeholder='e.g., Software Engineer'
-            />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div>
+              <Label htmlFor='position'>Position</Label>
+              <Input
+                id='position'
+                name='position' // <-- Tambahkan name
+                placeholder='e.g., Software Engineer'
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor='department'>Department</Label>
+              <Input
+                id='department'
+                name='department' // <-- Tambahkan name
+                placeholder='e.g., Technology'
+                required
+              />
+            </div>
           </div>
-          <div>
-            <Label htmlFor='department'>Department</Label>
-            <Input
-              id='department'
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              placeholder='e.g., Technology'
-            />
-          </div>
-        </div>
-        <Button onClick={handleCreateUser} disabled={loading}>
-          {loading ? 'Creating...' : 'Create Employee Account'}
-        </Button>
+          <Button type='submit' disabled={loading}>
+            {loading ? 'Creating...' : 'Create Employee Account'}
+          </Button>
+        </form>
       </CardContent>
     </Card>
   );

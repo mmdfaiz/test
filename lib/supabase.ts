@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
+// Client ini aman untuk digunakan di sisi client (browser)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // --- INTERFACES & TYPES ---
@@ -126,31 +127,10 @@ export async function deleteDocument(
   return { success: true };
 }
 
-// --- FUNGSI OTENTIKASI & ADMIN ---
+// --- FUNGSI OTENTIKASI ---
 
 // Fungsi login untuk karyawan menggunakan NIK
 export async function signInWithNik(nik: string, password: string) {
   const email = `${nik}@company.com`; // Mengubah NIK menjadi format email
   return supabase.auth.signInWithPassword({ email, password });
-}
-
-// Fungsi RPC untuk admin membuat pengguna baru
-export async function adminCreateUser(
-  nik: string,
-  password: string,
-  metadata: { fullName: string; position: string; department: string }
-) {
-  const { data, error } = await supabase.rpc('create_new_user', {
-    nik: nik,
-    password: password,
-    full_name: metadata.fullName,
-    position: metadata.position,
-    department: metadata.department,
-  });
-
-  if (error) {
-    console.error('Error creating user from RPC:', error);
-    throw error;
-  }
-  return data;
 }

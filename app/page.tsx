@@ -11,29 +11,28 @@ export default function HomePage() {
   const { user, loading } = useSupabaseAuth();
   const router = useRouter();
 
-  console.log('HomePage State:', { user, loading }); // <-- TAMBAHKAN INI
-
   useEffect(() => {
+    // Jangan lakukan apa-apa jika sesi masih loading
     if (loading) {
-      console.log('HomePage Effect: Loading, skipping redirect.');
       return;
     }
 
+    // Jika ada user yang login, cek rolenya
     if (user) {
       const role = user.user_metadata?.user_role;
-      console.log('HomePage Effect: User found with role:', role); // <-- TAMBAHKAN INI
+
       if (role === 'admin') {
         router.push('/admin');
       } else if (role === 'employee') {
         router.push('/employee');
-      } else {
-        console.error('HomePage Effect: User has no role, cannot redirect.'); // <-- TAMBAHKAN INI
       }
-    } else {
-      console.log('HomePage Effect: No user found.');
+      // Jika tidak ada role, user akan tetap di halaman ini (menampilkan "Redirecting...")
+      // atau bisa diarahkan ke halaman login lagi jika perlu.
     }
+    // Jika tidak ada user, komponen akan menampilkan LandingPage
   }, [user, loading, router]);
 
+  // Tampilkan loading indicator saat sesi sedang diperiksa
   if (loading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
@@ -42,10 +41,12 @@ export default function HomePage() {
     );
   }
 
+  // Jika tidak ada user, tampilkan halaman landing
   if (!user) {
     return <LandingPage />;
   }
 
+  // Tampilkan pesan ini sementara redirect berjalan
   return (
     <div className='min-h-screen flex items-center justify-center'>
       <p>Redirecting...</p>
